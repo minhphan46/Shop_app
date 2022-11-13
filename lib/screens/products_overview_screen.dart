@@ -1,4 +1,7 @@
 import "package:flutter/material.dart";
+import 'package:provider/provider.dart';
+import 'package:shop_app/providers/cart.dart';
+import 'package:shop_app/widgets/badge.dart';
 import '../widgets/products_gridview.dart';
 
 enum FilterOptions {
@@ -28,10 +31,10 @@ class _ProductOverviewScreenState extends State<ProductOverviewScreen> {
               }
               setState(() {});
             },
-            icon: Icon(
+            icon: const Icon(
               Icons.more_vert,
             ),
-            itemBuilder: (context) => [
+            itemBuilder: (context) => const [
               PopupMenuItem(
                 child: Text("Only Favourite"),
                 value: FilterOptions.Favourites,
@@ -41,7 +44,19 @@ class _ProductOverviewScreenState extends State<ProductOverviewScreen> {
                 value: FilterOptions.All,
               ),
             ],
-          )
+          ),
+          Consumer<Cart>(
+            builder: (_, cart, ch) => Badge(
+              child: ch!,
+              value: cart.itemCount.toString(),
+            ),
+            child: IconButton(
+              icon: Icon(
+                Icons.shopping_cart,
+              ),
+              onPressed: () {},
+            ),
+          ),
         ],
       ),
       body: ProductsGridView(_showOnlyFavorites),
