@@ -82,12 +82,8 @@ class _EditProductScreenState extends State<EditProductScreen> {
 
     if (_editedProduct.id != null) {
       // update gia tri
-      Provider.of<Products>(context, listen: false)
+      await Provider.of<Products>(context, listen: false)
           .updateProduct(_editedProduct.id!, _editedProduct);
-      setState(() {
-        _isLoading = true;
-      });
-      Navigator.of(context).pop();
     } else {
       // them gia tri moi
       try {
@@ -109,13 +105,12 @@ class _EditProductScreenState extends State<EditProductScreen> {
             ],
           ),
         );
-      } finally {
-        setState(() {
-          _isLoading = true;
-        });
-        Navigator.of(context).pop();
       }
     }
+    setState(() {
+      _isLoading = true;
+    });
+    Navigator.of(context).pop();
   }
 
   // xoa de tranh ro ri bo nho
