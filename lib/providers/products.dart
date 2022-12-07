@@ -39,6 +39,9 @@ class Products with ChangeNotifier {
     //       'https://upload.wikimedia.org/wikipedia/commons/thumb/1/14/Cast-Iron-Pan.jpg/1024px-Cast-Iron-Pan.jpg',
     // ),
   ];
+  final String? authToken;
+  final String? userId;
+  Products(this.authToken, this.userId, this._items);
 
   List<Product> get items {
     return [..._items];
@@ -53,12 +56,16 @@ class Products with ChangeNotifier {
   }
 
   Future<void> fectchAndSetProducts() async {
-    final url = Uri.parse(
-        'https://shop-app-1f534-default-rtdb.firebaseio.com/products.json');
+    var url = Uri.parse(
+        'https://shop-app-1f534-default-rtdb.firebaseio.com/products.json?auth=$authToken');
     try {
       final response = await http.get(url);
       final extractedData = json.decode(response.body) as Map<String, dynamic>;
       if (extractedData == null) return;
+      url = Uri.parse(
+          'https://shop-app-1f534-default-rtdb.firebaseio.com/userFavorites/$userId.json?auth=$authToken');
+      final favoriteResonse = await http.get(url);
+      final favoriteData = json.decode(favoriteResonse.body);
       final List<Product> loadedProducts = [];
       extractedData.forEach((prodId, prodData) {
         loadedProducts.add(Product(
@@ -67,9 +74,8 @@ class Products with ChangeNotifier {
           description: prodData['description'],
           price: prodData['price'],
           imageUrl: prodData['imageUrl'],
-          isFavourite: (prodData['isFavourite'] == null)
-              ? false
-              : prodData['isFavourite'],
+          isFavourite:
+              favoriteData == null ? false : favoriteData[prodId] ?? false,
         ));
       });
       _items = loadedProducts;
@@ -81,7 +87,7 @@ class Products with ChangeNotifier {
 
   Future<void> addProduct(Product product) async {
     final url = Uri.parse(
-        'https://shop-app-1f534-default-rtdb.firebaseio.com/products.json');
+        'https://shop-app-1f534-default-rtdb.firebaseio.com/products.json?auth=$authToken');
     // json : javaScript Object Notation
     try {
       final response = await http.post(
@@ -91,7 +97,6 @@ class Products with ChangeNotifier {
           'description': product.description,
           'imageUrl': product.imageUrl,
           'price': product.price,
-          'isFavorite': product.isFavourite,
         }),
       );
       final newProduct = Product(
@@ -113,7 +118,7 @@ class Products with ChangeNotifier {
     final prodIndex = _items.indexWhere((element) => element.id == id);
     if (prodIndex >= 0) {
       final url = Uri.parse(
-          'https://shop-app-1f534-default-rtdb.firebaseio.com/products/$id.json');
+          'https://shop-app-1f534-default-rtdb.firebaseio.com/products/$id.json?auth=$authToken');
       await http.patch(url,
           body: json.encode({
             'title': newProduct.title,
@@ -130,7 +135,7 @@ class Products with ChangeNotifier {
 
   Future<void> deleteProduct(String id) async {
     final url = Uri.parse(
-        'https://shop-app-1f534-default-rtdb.firebaseio.com/products/$id.json');
+        'https://shop-app-1f534-default-rtdb.firebaseio.com/products/$id.json?auth=$authToken');
     final existingProductIndex = _items.indexWhere((prod) => prod.id == id);
     var existingProduct = _items[existingProductIndex];
     _items.removeAt(existingProductIndex);
